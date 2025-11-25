@@ -1,0 +1,2 @@
+include autorecon/subdomains_small.txt
+include autorecon/subdomains_big.txt

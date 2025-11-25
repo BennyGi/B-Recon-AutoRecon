@@ -1,0 +1,12 @@
+MANIFEST.in
+README.md
+setup.py
+autorecon/__init__.py
+autorecon/cli.py
+autorecon/subdomains_big.txt
+autorecon/subdomains_small.txt
+autorecon_benny.egg-info/PKG-INFO
+autorecon_benny.egg-info/SOURCES.txt
+autorecon_benny.egg-info/dependency_links.txt
+autorecon_benny.egg-info/entry_points.txt
+autorecon_benny.egg-info/top_level.txt

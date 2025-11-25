@@ -1,0 +1,11 @@
+Executive Summary for facebook.com
+--------------------------------------
+
+This is a simplified overview of the website based on basic reconnaissance.
+
+✔ The site is online and responding.
+✔ Only common public services were detected.
+✔ No sensitive directories were found.
+✔ No critical issues detected in this basic scan.
+
+General Risk Level: Low
