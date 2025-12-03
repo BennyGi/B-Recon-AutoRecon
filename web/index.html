@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>B-Recon AI | Cybersecurity Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #0f1419;
+            --bg-tertiary: #1a1f35;
+            --accent-green: #00ff41;
+            --accent-cyan: #00ffff;
+            --accent-purple: #9d4edd;
+            --accent-red: #ff3366;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --border: rgba(0, 255, 65, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Matrix rain background */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* Glitch effect */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Pulse animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Typing cursor */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Scan line effect */
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .scan-line {
+            position: fixed;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            z-index: 1;
+            animation: scan 8s linear infinite;
+            opacity: 0.3;
+        }
+
+        #root {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.05), rgba(157, 78, 221, 0.05));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .title-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+
+        .status-panel {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--accent-green);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .status-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 4px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .avatar.user {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-red));
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
+        }
+
+        .avatar.assistant {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+            color: var(--bg-primary);
+        }
+
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .message-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.2), rgba(255, 51, 102, 0.2));
+            border: 1px solid rgba(157, 78, 221, 0.4);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-box {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', system-ui, sans-serif;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .input-box::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            color: var(--bg-primary);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.4);
+        }
+
+        .send-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: var(--accent-green);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quick-action:hover {
+            background: rgba(0, 255, 65, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Success/Error/Info styles */
+        .line-success { color: var(--accent-green); font-weight: 500; }
+        .line-error { color: var(--accent-red); font-weight: 500; }
+        .line-info { color: var(--accent-cyan); }
+
+        /* Download Links */
+        .download-links {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .download-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .download-link:hover {
+            color: var(--accent-green);
+            transform: translateX(4px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .status-panel {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .chat-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div class="scan-line"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const API_BASE = "http://127.0.0.1:8000";
+
+        function App() {
+            const [messages, setMessages] = useState([
+                {
+                    role: 'assistant',
+                    text: '🛡️ SYSTEM INITIALIZED\n\nB-Recon AI Online. Ready for reconnaissance operations.\n\nTry:\n• "scan tesla.com for subdomains"\n• "full recon on google.com"\n• "find emails on github.com"',
+                    timestamp: new Date()
+                }
+            ]);
+            const [input, setInput] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const [stats, setStats] = useState({ scans: 0, domains: 0 });
+            const [progressDomain, setProgressDomain] = useState(null);
+            const [progressInterval, setProgressInterval] = useState(null);
+            const messagesEndRef = useRef(null);
+            const inputRef = useRef(null);
+            const chatMessagesRef = useRef(null);
+
+            // Smart scroll: only auto-scroll if user is already at bottom
+            const scrollToBottom = (force = false) => {
+                if (!chatMessagesRef.current) return;
+                
+                const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+                const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+                
+                if (force || isAtBottom) {
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            useEffect(() => {
+                scrollToBottom(true); // Force scroll when user sends new message
+            }, [messages.length]);
+
+            // Cleanup progress polling on unmount
+            useEffect(() => {
+                return () => {
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                    }
+                };
+            }, [progressInterval]);
+
+            const extractDomain = (text) => {
+                const m = text.match(/\b([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/);
+                return m ? m[1].toLowerCase() : null;
+            };
+
+            const isLongRunningQuery = (text) => {
+                const lowered = text.toLowerCase();
+                return (
+                    lowered.includes("full recon") ||
+                    lowered.includes("full scan") ||
+                    lowered.includes("recon on") ||
+                    lowered.includes("scan ") ||
+                    lowered.includes("nmap") ||
+                    lowered.includes("ports for") ||
+                    lowered.includes("subdomains for")
+                );
+            };
+
+            const pollProgress = async (domain, messageIndex) => {
+                try {
+                    const url = `${API_BASE}/progress?domain=${encodeURIComponent(domain)}`;
+                    const res = await fetch(url, {
+                        method: "GET",
+                        headers: { "Accept": "application/json" }
+                    });
+
+                    if (!res.ok) return;
+
+                    const data = await res.json();
+                    const lines = data.lines || [];
+
+                    if (lines.length > 0) {
+                        setMessages(prev => {
+                            const newMessages = [...prev];
+                            if (newMessages[messageIndex]) {
+                                newMessages[messageIndex].text = 
+                                    `⏳ Scanning ${domain}...\n\n` + lines.join('\n');
+                            }
+                            return newMessages;
+                        });
+                        
+                        // Smart scroll: only if user is at bottom
+                        scrollToBottom(false);
+                    }
+                } catch (err) {
+                    // Silently ignore
+                }
+            };
+
+            const quickActions = [
+                "What can you do?",
+                "scan google.com",
+                "find subdomains on tesla.com",
+                "help"
+            ];
+
+            const sendMessage = async () => {
+                if (!input.trim() || isLoading) return;
+
+                const userMessage = {
+                    role: 'user',
+                    text: input,
+                    timestamp: new Date()
+                };
+
+                setMessages(prev => [...prev, userMessage]);
+                const userInput = input;
+                setInput('');
+                setIsLoading(true);
+
+                const isScan = isLongRunningQuery(userInput);
+                const domain = extractDomain(userInput);
+
+                // Clear previous progress polling
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                    setProgressInterval(null);
+                }
+
+                // Add progress message if it's a scan
+                let progressMessageIndex = null;
+                if (isScan && domain) {
+                    const progressMsg = {
+                        role: 'assistant',
+                        text: `⏳ Starting recon scan for ${domain}...\nThis panel will update as steps complete.`,
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => {
+                        progressMessageIndex = prev.length;
+                        return [...prev, progressMsg];
+                    });
+                    setProgressDomain(domain);
+
+                    // Start polling
+                    const interval = setInterval(() => {
+                        pollProgress(domain, progressMessageIndex);
+                    }, 3000);
+                    setProgressInterval(interval);
+                }
+
+                try {
+                    const url = `${API_BASE}/ai?question=${encodeURIComponent(userInput)}`;
+                    const res = await fetch(url, {
+                        method: "GET",
+                        headers: { "Accept": "application/json" }
+                    });
+                    
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const data = await res.json();
+                    
+                    const aiMessage = {
+                        role: 'assistant',
+                        text: data.answer || 'No response',
+                        timestamp: new Date(),
+                        domain: isScan && domain ? domain : null
+                    };
+
+                    setMessages(prev => [...prev, aiMessage]);
+                    setStats(prev => ({ 
+                        ...prev, 
+                        scans: prev.scans + 1,
+                        domains: isScan && domain ? prev.domains + 1 : prev.domains
+                    }));
+
+                } catch (err) {
+                    setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        text: `⚠️ CONNECTION ERROR\n\n${err.message}\n\nCheck if API server is running.`,
+                        timestamp: new Date()
+                    }]);
+                } finally {
+                    setIsLoading(false);
+                    inputRef.current?.focus();
+                    
+                    // Stop progress polling
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                        setProgressInterval(null);
+                    }
+                    setProgressDomain(null);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+
+            const formatTime = (date) => {
+                return date.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            };
+
+            return (
+                <div className="app-container">
+                    {/* Header */}
+                    <div className="header">
+                        <div className="header-content">
+                            <div className="logo-section">
+                                <div className="logo">BR</div>
+                                <div className="title-section">
+                                    <h1>B-RECON AI</h1>
+                                    <div className="subtitle">CYBERSECURITY INTELLIGENCE PLATFORM</div>
+                                </div>
+                            </div>
+                            
+                            <div className="status-panel">
+                                <div className="stat-item">
+                                    <div className="stat-value">{stats.scans}</div>
+                                    <div className="stat-label">Queries</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-value">{stats.domains}</div>
+                                    <div className="stat-label">Domains</div>
+                                </div>
+                                <div className="status-indicator">
+                                    <div className="status-dot"></div>
+                                    <span className="status-text">ONLINE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Chat Container */}
+                    <div className="chat-container">
+                        <div className="chat-messages" ref={chatMessagesRef}>
+                            {messages.map((msg, idx) => (
+                                <div key={idx} className={`message ${msg.role}`}>
+                                    <div className={`avatar ${msg.role}`}>
+                                        {msg.role === 'user' ? 'U' : 'BR'}
+                                    </div>
+                                    <div className="message-content">
+                                        <div className="message-label">
+                                            {msg.role === 'user' ? 'USER' : 'B-RECON'}
+                                        </div>
+                                        <div className="message-bubble">
+                                            {msg.text.split('\n').map((line, i) => (
+                                                <div key={i} className={
+                                                    line.includes('✅') ? 'line-success' :
+                                                    line.includes('⚠️') || line.includes('[ERROR') ? 'line-error' :
+                                                    line.includes('🔍') || line.includes('⏳') ? 'line-info' : ''
+                                                }>
+                                                    {line}
+                                                </div>
+                                            ))}
+                                            
+                                            {/* Download links for scan results */}
+                                            {msg.domain && msg.role === 'assistant' && (
+                                                <div className="download-links">
+                                                    <div className="line-info">📥 Download Reports:</div>
+                                                    <a 
+                                                        href={`${API_BASE}/reports/technical?domain=${encodeURIComponent(msg.domain)}`}
+                                                        className="download-link"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        ⬇ Technical Report
+                                                    </a>
+                                                    <a 
+                                                        href={`${API_BASE}/reports/human?domain=${encodeURIComponent(msg.domain)}`}
+                                                        className="download-link"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        ⬇ Executive Summary
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="message-time">{formatTime(msg.timestamp)}</div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {isLoading && (
+                                <div className="typing-indicator">
+                                    <div className="avatar assistant">BR</div>
+                                    <div className="typing-dots">
+                                        <div className="typing-dot"></div>
+                                        <div className="typing-dot"></div>
+                                        <div className="typing-dot"></div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="input-container">
+                            <div className="input-wrapper">
+                                <textarea
+                                    ref={inputRef}
+                                    className="input-box"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Enter reconnaissance command or ask a question..."
+                                    disabled={isLoading}
+                                />
+                                <button 
+                                    className="send-button"
+                                    onClick={sendMessage}
+                                    disabled={isLoading || !input.trim()}
+                                >
+                                    {isLoading ? '⏳ PROCESSING' : '▶ EXECUTE'}
+                                </button>
+                            </div>
+                            
+                            <div className="quick-actions">
+                                {quickActions.map((action, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className="quick-action"
+                                        onClick={() => setInput(action)}
+                                    >
+                                        {action}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 14, 39, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px JetBrains Mono';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

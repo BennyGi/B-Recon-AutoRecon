@@ -50,6 +50,8 @@ def run_cmd(cmd):
 # ---------------- CLI FLAGS ----------------
 def parse_flags(args):
     return {
+        "full": ("--full" in args) or ("-F" in args),
+
         "only_dns": "--only-dns" in args,
         "only_nmap": "--only-nmap" in args,
         "skip_ffuf": "--skip-ffuf" in args,
@@ -65,8 +67,8 @@ def parse_flags(args):
         "tech": "--tech" in args,
         "emails": "--emails" in args,
         "ports": "--ports" in args,
-
     }
+
 
 
 # ---------------- Reports ----------------
@@ -218,6 +220,7 @@ def scan_ct_logs(domain, outdir):
     ok(f"Saved {len(results)} CT subdomains.")
 
 # -------------------------------HTML REPORT -------------------------------
+# -------------------------------HTML REPORT -------------------------------
 def generate_html_report(domain, outdir):
     html_path = f"{outdir}/report.html"
 
@@ -235,43 +238,43 @@ def generate_html_report(domain, outdir):
     open_ports = ports_json
 
     html = f"""
-    <html>
+<html>
 <head>
     <title>AutoRecon HTML Report - {domain}</title>
 
     <style>
-        body {
+        body {{
             font-family: Arial;
             padding: 20px;
             background: #0a0a0a;
             color: #e5e5e5;
             transition: 0.4s;
-        }
+        }}
 
-        h1, h2 {
+        h1, h2 {{
             color: #4cc9f0;
-        }
+        }}
 
-        pre {
+        pre {{
             background: #1a1a1a;
             padding: 12px;
             border-radius: 6px;
             white-space: pre-wrap;
             border: 1px solid #333;
-        }
+        }}
 
-        .section {
+        .section {{
             margin-bottom: 40px;
-        }
+        }}
 
         /* ---- THEME BUTTONS ---- */
-        .theme-buttons {
+        .theme-buttons {{
             display: flex;
             gap: 15px;
             margin-bottom: 25px;
-        }
+        }}
 
-        button {
+        button {{
             padding: 10px 18px;
             border-radius: 6px;
             cursor: pointer;
@@ -279,82 +282,79 @@ def generate_html_report(domain, outdir):
             font-size: 15px;
             font-weight: bold;
             transition: 0.3s;
-        }
+        }}
 
         /* CYBER */
-        .cyber-btn {
+        .cyber-btn {{
             background: #0d0221;
             color: #4cc9f0;
             border: 1px solid #4cc9f0;
             box-shadow: 0 0 8px #4cc9f0;
-        }
-        .cyber-btn:hover {
+        }}
+        .cyber-btn:hover {{
             box-shadow: 0 0 15px #4cc9f0;
             transform: scale(1.05);
-        }
+        }}
 
         /* LIGHT */
-        .light-btn {
+        .light-btn {{
             background: #fff;
             color: #333;
             border: 1px solid #ccc;
-        }
-        .light-btn:hover {
+        }}
+        .light-btn:hover {{
             background: #f2f2f2;
-        }
+        }}
 
         /* MATRIX */
-        .matrix-btn {
+        .matrix-btn {{
             background: #000;
             color: #00ff41;
             border: 1px solid #00ff41;
             box-shadow: 0 0 10px #00ff41;
-        }
-        .matrix-btn:hover {
+        }}
+        .matrix-btn:hover {{
             box-shadow: 0 0 16px #00ff41;
             transform: scale(1.05);
-        }
-
-        /* ---- THEMES ---- */
+        }}
 
         /* LIGHT THEME */
-        body.light {
+        body.light {{
             background: #f5f5f5;
             color: #222;
-        }
-        body.light pre {
+        }}
+        body.light pre {{
             background: #fff;
             border: 1px solid #ddd;
-        }
-        body.light h1, body.light h2 {
+        }}
+        body.light h1, body.light h2 {{
             color: #0078d4;
-        }
+        }}
 
         /* MATRIX THEME */
-        body.matrix {
+        body.matrix {{
             background: #000;
             color: #00ff41;
-        }
-        body.matrix pre {
+        }}
+        body.matrix pre {{
             background: #001900;
             border: 1px solid #003300;
-        }
-        body.matrix h1, body.matrix h2 {
+        }}
+        body.matrix h1, body.matrix h2 {{
             color: #00ff41;
-        }
-
+        }}
     </style>
 
     <script>
-        function setTheme(theme) {
+        function setTheme(theme) {{
             document.body.className = theme;
             localStorage.setItem("theme", theme);
-        }
+        }}
 
-        window.onload = () => {
+        window.onload = () => {{
             let saved = localStorage.getItem("theme") || "cyber";
             setTheme(saved);
-        };
+        }};
     </script>
 </head>
 
@@ -411,13 +411,13 @@ def generate_html_report(domain, outdir):
 
 </body>
 </html>
-
-    """
+"""
 
     with open(html_path, "w") as f:
         f.write(html)
 
     ok(f"HTML Report generated at: {html_path}")
+
 
 # ---------------------------------------------------------------------
 # ------------------------- SCREENSHOT ENGINE --------------------------
@@ -751,6 +751,20 @@ def main():
 
     outdir = os.path.expanduser(f"~/autorecon-results/{domain}")
     os.makedirs(outdir, exist_ok=True)
+    
+        # ---------------- FULL PIPELINE (same as AI chat) ----------------
+    if flags.get("full"):
+        # Delegate to the unified pipeline in recon_api
+        try:
+            import recon_api
+        except ImportError:
+            error("Could not import recon_api. Make sure recon_api.py is in your PYTHONPATH / project root.")
+            return
+
+        recon_api.run_full(domain)
+        ok("Full scan (CLI) completed via recon_api.run_full()")
+        return
+
 
 
     # ---------------- ONLY SUBDOMAINS ----------------
