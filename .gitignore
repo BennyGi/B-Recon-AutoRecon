@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.log
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Virtual env
+venv/
+.venv/
+
+# Recon results
+autorecon-results/
+results/
+
+# Node/React (just in case)
+node_modules/
+npm-debug.log
+yarn-error.log
+build/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
