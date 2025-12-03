@@ -286,13 +286,44 @@ Results stored in: `~/autorecon-results/<domain>/`
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots & Examples
 
-### Web Chat Interface
-![Chat UI](assets/chat_ui.png)
+### Web UI Chat Interface
 
-### Scan Progress Panel
-![Scan Progress](assets/scan_progress.png)
+**Hello/Greeting Examples:**
+<div align="center">
+  <img src="assets/AI(UI)-Hello.png" width="75%" alt="B-Recon Hello Chat">
+  <img src="assets/AI(UI)-Hello2.png" width="75%" alt="B-Recon Chat Example 2">
+</div>
+
+**Full Reconnaissance Scan Examples:**
+<div align="center">
+  <img src="assets/AI(UI)-FullScan1.png" width="75%" alt="Full Scan Output 1">
+  <img src="assets/AI(UI)-FullScan2.png" width="75%" alt="Full Scan Output 2">
+  <img src="assets/AI(UI)-FullScan3.png" width="75%" alt="Full Scan Output 3">
+</div>
+
+<div align="center">
+  <img src="assets/AI(UI)-FullScan4.png" width="75%" alt="Full Scan Output 4">
+  <img src="assets/AI(UI)-FullScan5.png" width="75%" alt="Full Scan Output 5">
+  <img src="assets/AI(UI)-FullScan6.png" width="75%" alt="Full Scan Output 6">
+</div>
+
+### AI Assistant Output Examples
+
+**LLM-Powered Analysis (No UI):**
+<div align="center">
+  <img src="assets/AI(NoUI).png" width="75%" alt="AI Analysis Output">
+  <img src="assets/AI(NoUI)2.png" width="75%" alt="AI Analysis Output 2">
+  <img src="assets/AI(NoUI)3.png" width="75%" alt="AI Analysis Output 3">
+</div>
+
+### CLI Terminal Example
+
+**Automated Reconnaissance via Command Line:**
+<div align="center">
+  <img src="assets/AutoReconTerminalGoogle.com.png" width="75%" alt="CLI Terminal Output">
+</div>
 
 ---
 
